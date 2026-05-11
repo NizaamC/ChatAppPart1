@@ -1,6 +1,15 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
+ */
 package chatapp;
 
 import java.util.Scanner;
+
+/**
+ *
+ * @author nizaam
+ */
 
 public class Main {
 
@@ -8,102 +17,158 @@ public class Main {
 
         Scanner input = new Scanner(System.in);
         Login login = new Login();
+        MessageService service = new MessageService();
 
-        String firstName, lastName, username, password, cellPhone;
+        System.out.println("=== Welcome to QuickChat ===");
 
-        System.out.println("=== REGISTRATION ===");
+        // ================= REGISTER OR LOGIN =================
+        System.out.println("1) Register");
+        System.out.println("2) Login");
+        System.out.print("Choose option: ");
+        int startChoice = input.nextInt();
+        input.nextLine();
 
-        System.out.print("Enter First Name: ");
-        firstName = input.nextLine();
+        if (startChoice == 1) {
 
-        System.out.print("Enter Last Name: ");
-        lastName = input.nextLine();
+            System.out.println("\n=== REGISTRATION ===");
 
-        // 🔹 Username loop
-        do {
-            System.out.print("Enter Username: ");
-            username = input.nextLine().trim();
+            System.out.print("Enter First Name: ");
+            String firstName = input.nextLine();
 
-            if (!login.checkUserName(username)) {
-                System.out.println("Username is not correctly formatted; please ensure it contains an underscore and is no more than 5 characters.");
-            }
+            System.out.print("Enter Last Name: ");
+            String lastName = input.nextLine();
 
-        } while (!login.checkUserName(username));
-
-        System.out.println("Username successfully captured.");
-
-        // 🔹 Password loop
-        do {
-            System.out.print("Enter Password: ");
-            password = input.nextLine().trim();
-
-            if (!login.checkPasswordComplexity(password)) {
-                System.out.println("Password is not correctly formatted; must contain 8 characters, capital letter, number, and special character.");
-            }
-
-        } while (!login.checkPasswordComplexity(password));
-
-        System.out.println("Password successfully captured.");
-
-        // 🔹 Cellphone loop (FIXED)
-        do {
-            System.out.print("Enter Cellphone (e.g. 079... or +27...): ");
-            cellPhone = input.nextLine().trim();
-
-            if (!login.checkCellphoneNumber(cellPhone)) {
-                System.out.println("Cell phone number incorrectly formatted. Enter 10 digits starting with 0 or include +27.");
-            }
-
-        } while (!login.checkCellphoneNumber(cellPhone));
-
-        System.out.println("Cell phone number successfully captured.");
-
-        // Register user
-        login.registerUser(username, password, cellPhone, firstName, lastName);
-
-        System.out.println("\n=== LOGIN ===");
-
-        System.out.print("Enter Username: ");
-        String loginUser = input.nextLine().trim();
-
-        System.out.print("Enter Password: ");
-        String loginPass = input.nextLine().trim();
-
-        boolean status = login.loginUser(loginUser, loginPass);
-
-        System.out.println(login.returnLoginStatus(status));
-
-        // Menu
-        if (status) {
-            int choice;
-
+            String username;
             do {
-                System.out.println("\n=== MAIN MENU ===");
-                System.out.println("1. Send Message");
-                System.out.println("2. View Messages");
-                System.out.println("3. Logout");
-                System.out.print("Choose option: ");
-
-                choice = input.nextInt();
-                input.nextLine();
-
-                switch (choice) {
-                    case 1:
-                        System.out.println("Send Message feature coming in Part 2.");
-                        break;
-                    case 2:
-                        System.out.println("View Messages feature coming in Part 2.");
-                        break;
-                    case 3:
-                        System.out.println("Logging out...");
-                        break;
-                    default:
-                        System.out.println("Invalid choice.");
+                System.out.print("Enter Username: ");
+                username = input.nextLine();
+                if (!login.checkUserName(username)) {
+                    System.out.println("Invalid username.");
                 }
+            } while (!login.checkUserName(username));
 
-            } while (choice != 3);
+            String password;
+            do {
+                System.out.print("Enter Password: ");
+                password = input.nextLine();
+                if (!login.checkPasswordComplexity(password)) {
+                    System.out.println("Invalid password.");
+                }
+            } while (!login.checkPasswordComplexity(password));
+
+            String phone;
+            do {
+                System.out.print("Enter Cellphone: ");
+                phone = input.nextLine();
+                if (!login.checkCellphoneNumber(phone)) {
+                    System.out.println("Invalid phone.");
+                }
+            } while (!login.checkCellphoneNumber(phone));
+
+            System.out.println(login.registerUser(username, password, phone, firstName, lastName));
         }
 
-        System.out.println("Program ended.");
+        // ================= LOGIN LOOP =================
+        boolean loggedIn = false;
+
+        while (!loggedIn) {
+
+            System.out.println("\n=== LOGIN ===");
+
+            System.out.print("Username: ");
+            String user = input.nextLine();
+
+            System.out.print("Password: ");
+            String pass = input.nextLine();
+
+            if (login.loginUser(user, pass)) {
+                loggedIn = true;
+                System.out.println("Login successful!");
+            } else {
+                System.out.println("Incorrect details. Try again.");
+            }
+        }
+
+        // ================= MESSAGE COUNT =================
+        System.out.print("\nHow many messages would you like to send? ");
+        int maxMessages = input.nextInt();
+        input.nextLine();
+
+        int sentCount = 0;
+
+        // ================= MAIN MENU =================
+        int choice;
+
+        do {
+            System.out.println("\n=== MAIN MENU ===");
+            System.out.println("1) Send Messages");
+            System.out.println("2) Show recently sent messages");
+            System.out.println("3) Quit");
+            System.out.print("Choose option: ");
+
+            choice = input.nextInt();
+            input.nextLine();
+
+            switch (choice) {
+
+                case 1:
+
+                    if (sentCount >= maxMessages) {
+                        System.out.println("You have reached your message limit.");
+                        break;
+                    }
+
+                    System.out.print("Enter recipient (+27...): ");
+                    String recipient = input.nextLine();
+
+                    System.out.print("Enter message: ");
+                    String text = input.nextLine();
+
+                    Message msg = new Message(recipient, text);
+
+                    // Validate message
+                    String validation = msg.validateMessageLength();
+                    System.out.println(validation);
+
+                    if (!validation.equals("Message ready to send.")) {
+                        break;
+                    }
+
+                    // Options
+                    System.out.println("1) Send Message");
+                    System.out.println("2) Disregard Message");
+                    System.out.println("3) Store Message");
+                    System.out.print("Choose option: ");
+
+                    int option = input.nextInt();
+                    input.nextLine();
+
+                    String result = msg.sentMessage(option);
+                    System.out.println(result);
+
+                    if (option == 1) {
+                        service.addMessage(msg);
+                        System.out.println(msg.printMessage());
+                        sentCount++;
+                    }
+
+                    break;
+
+                case 2:
+                    System.out.println("Coming Soon.");
+                    break;
+
+                case 3:
+                    System.out.println("Goodbye!");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+
+        } while (choice != 3);
+
+        // ================= TOTAL =================
+        System.out.println("Total messages sent: " + Message.returnTotalMessages());
     }
 }

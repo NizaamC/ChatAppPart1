@@ -1,73 +1,115 @@
-package chatapp;
+ /*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
+ */
+ package chatapp;
+      
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.Iterator;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+ 
+/**
+ *
+ * @author nizaam
+ */
+
 
 public class Login {
 
-    private User registeredUser;
+    // ================= VALIDATION =================
 
     public boolean checkUserName(String username) {
         return username.contains("_") && username.length() <= 5;
     }
 
     public boolean checkPasswordComplexity(String password) {
-        String regex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$";
-        return password.matches(regex);
+        return password.matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$");
     }
 
-    // ✅ FIXED: Accepts 079... and +27...
     public boolean checkCellphoneNumber(String cellPhone) {
 
-        // Remove spaces
-        cellPhone = cellPhone.trim();
-
-        // Convert local SA format → international
         if (cellPhone.startsWith("0") && cellPhone.length() == 10) {
             cellPhone = "+27" + cellPhone.substring(1);
         }
 
-        String regex = "^\\+27\\d{9}$";
-        return cellPhone.matches(regex);
+        return cellPhone.matches("^\\+27\\d{9}$");
     }
 
-    public String registerUser(String username, String password, String cellPhone,
-                               String firstName, String lastName) {
+    // ================= REGISTER =================
 
-        if (!checkUserName(username)) {
-            return "Username is not correctly formatted; please ensure that your username contains an underscore and is no more than five characters in length.";
-        }
+    public String registerUser(String username, String password,
+                               String cellPhone, String firstName, String lastName) {
 
-        if (!checkPasswordComplexity(password)) {
-            return "Password is not correctly formatted; please ensure that the password contains at least eight characters, a capital letter, a number, and a special character.";
-        }
+        if (!checkUserName(username)) return "Invalid username.";
+        if (!checkPasswordComplexity(password)) return "Invalid password.";
+        if (!checkCellphoneNumber(cellPhone)) return "Invalid phone.";
 
-        if (!checkCellphoneNumber(cellPhone)) {
-            return "Cell phone number incorrectly formatted or does not contain international code.";
-        }
-
-        // ✅ Convert BEFORE storing
-        cellPhone = cellPhone.trim();
-        if (cellPhone.startsWith("0") && cellPhone.length() == 10) {
+        if (cellPhone.startsWith("0")) {
             cellPhone = "+27" + cellPhone.substring(1);
         }
 
-        registeredUser = new User(username, password, cellPhone, firstName, lastName);
+        saveUserToJSON(username, password, firstName, lastName, cellPhone);
 
-        return "User successfully registered.";
+        return "User registered successfully.";
     }
+
+    // ================= LOGIN =================
 
     public boolean loginUser(String username, String password) {
-        if (registeredUser == null) return false;
 
-        return registeredUser.getUsername().equals(username) &&
-               registeredUser.getPassword().equals(password);
+        try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(new FileReader("users.json"));
+
+            JSONArray users = (JSONArray) obj;
+
+            for (Object o : users) {
+                JSONObject user = (JSONObject) o;
+
+                if (user.get("username").equals(username) &&
+                    user.get("password").equals(password)) {
+                    return true;
+                }
+            }
+
+        } catch (Exception e) {
+            return false;
+        }
+
+        return false;
     }
 
-    public String returnLoginStatus(boolean loginStatus) {
-        if (loginStatus) {
-            return "Welcome " + registeredUser.getFirstName() + ", " +
-                   registeredUser.getLastName() +
-                   " it is great to see you again.";
-        } else {
-            return "Username or password incorrect, please try again.";
+    // ================= SAVE (APPEND FIXED) =================
+
+    private void saveUserToJSON(String username, String password,
+                                String firstName, String lastName, String cellPhone) {
+
+        JSONArray users = new JSONArray();
+
+        try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(new FileReader("users.json"));
+            users = (JSONArray) obj;
+        } catch (Exception e) {
+            // File doesn't exist yet → start fresh
+        }
+
+        JSONObject newUser = new JSONObject();
+        newUser.put("username", username);
+        newUser.put("password", password);
+        newUser.put("firstName", firstName);
+        newUser.put("lastName", lastName);
+        newUser.put("cellPhone", cellPhone);
+
+        users.add(newUser);
+
+        try (FileWriter file = new FileWriter("users.json")) {
+            file.write(users.toJSONString());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

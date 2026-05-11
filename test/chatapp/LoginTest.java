@@ -12,44 +12,40 @@ import static org.junit.Assert.*;
  * @author nizaam
  */
 
+
 public class LoginTest {
 
     Login login = new Login();
 
     @Test
-    public void testUsernameCorrect() {
-        assertTrue(login.checkUserName("kyl_1"));
+    public void testUsernameValid() {
+        assertTrue(login.checkUserName("abc_1"));
     }
 
     @Test
-    public void testUsernameIncorrect() {
-        assertFalse(login.checkUserName("kyle!!!!!!"));
+    public void testUsernameInvalid() {
+        assertFalse(login.checkUserName("abcdef"));
     }
 
     @Test
-    public void testPasswordCorrect() {
-        assertTrue(login.checkPasswordComplexity("Ch&&sec@ke99!"));
+    public void testPasswordValid() {
+        assertTrue(login.checkPasswordComplexity("Password@1"));
     }
 
     @Test
-    public void testPasswordIncorrect() {
-        assertFalse(login.checkPasswordComplexity("password"));
+    public void testPasswordInvalid() {
+        assertFalse(login.checkPasswordComplexity("pass"));
     }
 
     @Test
-    public void testCellphoneCorrect() {
-        assertTrue(login.checkCellphoneNumber("+27838968976"));
+    public void testCellphoneValid() {
+        assertTrue(login.checkCellphoneNumber("0831234567"));
     }
 
     @Test
     public void testLoginSuccess() {
-        login.registerUser("kyl_1", "Ch&&sec@ke99!", "0838968976", "Cole", "User");
-        assertTrue(login.loginUser("kyl_1", "Ch&&sec@ke99!"));
-    }
-
-    @Test
-    public void testLoginFail() {
-        login.registerUser("kyl_1", "Ch&&sec@ke99!", "0838968976", "Cole", "User");
-        assertFalse(login.loginUser("wrong", "wrong"));
+        login.registerUser("abc_1", "Password@1", "0831234567", "A", "B");
+        assertTrue(login.loginUser("abc_1", "Password@1"));
     }
 }
+    

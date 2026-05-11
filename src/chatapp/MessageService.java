@@ -4,7 +4,14 @@
  */
 package chatapp;
 
+import java.io.FileWriter;
+import java.io.FileReader;
 import java.util.ArrayList;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 /**
  *
  * @author nizaam
@@ -14,25 +21,61 @@ public class MessageService {
 
     private ArrayList<Message> messages = new ArrayList<>();
 
-    public void sendMessage(String text) {
-        Message msg = new Message(text);
-        msg.sendMessage();
-        msg.receiveMessage(); // simulate delivery
+    // ================= ADD MESSAGE =================
+    public void addMessage(Message msg) {
         messages.add(msg);
-
-        System.out.println("Message sent successfully.");
+        saveMessageToJSON(msg);
     }
 
-    public void readMessages() {
-        if (messages.isEmpty()) {
-            System.out.println("No messages available.");
-            return;
+    // ================= SAVE TO JSON =================
+    private void saveMessageToJSON(Message msg) {
+
+        JSONArray messageList = new JSONArray();
+
+        try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(new FileReader("messages.json"));
+            messageList = (JSONArray) obj;
+        } catch (Exception e) {
+            // File doesn't exist yet → start fresh
         }
 
-        for (Message msg : messages) {
-            msg.readMessage();
-            System.out.println("----------------------");
-            System.out.println(msg);
+        JSONObject newMsg = new JSONObject();
+        newMsg.put("id", msg.getMessageID());
+        newMsg.put("hash", msg.getMessageHash());
+        newMsg.put("recipient", msg.getRecipient());
+        newMsg.put("message", msg.getMessageText());
+
+        messageList.add(newMsg);
+
+        try (FileWriter file = new FileWriter("messages.json")) {
+            file.write(messageList.toJSONString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ================= VIEW MESSAGES =================
+    public void readStoredMessages() {
+
+        try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(new FileReader("messages.json"));
+
+            JSONArray messageList = (JSONArray) obj;
+
+            for (Object o : messageList) {
+                JSONObject msg = (JSONObject) o;
+
+                System.out.println("----------------------");
+                System.out.println("Message ID: " + msg.get("id"));
+                System.out.println("Hash: " + msg.get("hash"));
+                System.out.println("Recipient: " + msg.get("recipient"));
+                System.out.println("Message: " + msg.get("message"));
+            }
+
+        } catch (Exception e) {
+            System.out.println("No stored messages.");
         }
     }
 }
