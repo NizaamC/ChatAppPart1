@@ -19,13 +19,27 @@ import org.json.simple.parser.JSONParser;
 
 public class MessageService {
 
-    private ArrayList<Message> messages = new ArrayList<>();
+private ArrayList<Message> sentMessages = new ArrayList<>();
+private ArrayList<Message> storedMessages = new ArrayList<>();
+private ArrayList<Message> disregardedMessages = new ArrayList<>();
 
     // ================= ADD MESSAGE =================
-    public void addMessage(Message msg) {
-        messages.add(msg);
-        saveMessageToJSON(msg);
+public void addMessage(Message msg) {
+
+    if(msg.getFlag().equalsIgnoreCase("Sent")) {
+        sentMessages.add(msg);
     }
+
+    if(msg.getFlag().equalsIgnoreCase("Stored")) {
+        storedMessages.add(msg);
+    }
+
+    if(msg.getFlag().equalsIgnoreCase("Disregard")) {
+        disregardedMessages.add(msg);
+    }
+
+    saveMessageToJSON(msg);
+}
 
     // ================= SAVE TO JSON =================
     private void saveMessageToJSON(Message msg) {
@@ -77,5 +91,52 @@ public class MessageService {
         } catch (Exception e) {
             System.out.println("No stored messages.");
         }
+}
+
+// NEW METHODS GO HERE
+
+public void displayStoredMessages() {
+
+    for(Message msg : storedMessages) {
+
+        System.out.println("--------------------");
+        System.out.println("Recipient: " + msg.getRecipient());
+        System.out.println("Message: " + msg.getMessageText());
     }
+}
+
+public void displayLongestStoredMessage() {
+
+    if(storedMessages.isEmpty()) {
+        System.out.println("No stored messages.");
+        return;
+    }
+
+    Message longest = storedMessages.get(0);
+
+    for(Message msg : storedMessages) {
+
+        if(msg.getMessageText().length() >
+           longest.getMessageText().length()) {
+
+            longest = msg;
+        }
+    }
+
+    System.out.println(longest.getMessageText());
+}
+
+public void displayReport() {
+
+    System.out.println("\n===== REPORT =====");
+
+    for(Message msg : sentMessages) {
+
+        System.out.println("--------------------");
+        System.out.println("Hash: " + msg.getMessageHash());
+        System.out.println("Recipient: " + msg.getRecipient());
+        System.out.println("Message: " + msg.getMessageText());
+    }
+}
+
 }

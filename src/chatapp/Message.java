@@ -16,15 +16,18 @@ public class Message {
     private String recipient;
     private String messageText;
     private String messageHash;
+    private String flag;
 
     private static int messageCount = 0;
 
-    public Message(String recipient, String messageText) {
+    public Message(String recipient, String messageText, String flag) { 
         this.messageID = generateMessageID();
         this.recipient = recipient;
         this.messageText = messageText;
+        this.flag = flag;
         this.messageHash = createMessageHash();
         messageCount++;
+        
     }
 
     private String generateMessageID() {
@@ -50,6 +53,7 @@ public class Message {
     }
 
     public String createMessageHash() {
+        
         String[] words = messageText.trim().split(" ");
         String firstWord = words[0];
         String lastWord = words[words.length - 1];
@@ -84,4 +88,8 @@ public class Message {
     public String getRecipient() { return recipient; }
     public String getMessageText() { return messageText; }
     public String getMessageHash() { return messageHash; }
+    
+    public String getFlag() {
+    return flag;
+}
 }
